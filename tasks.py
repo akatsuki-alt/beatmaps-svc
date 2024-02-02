@@ -6,7 +6,6 @@ from common.logging import get_logger
 from ossapi import *
 
 import common.repos.beatmaps as beatmaps
-import logging
 
 logger = get_logger("beatmaps_svc")
 
