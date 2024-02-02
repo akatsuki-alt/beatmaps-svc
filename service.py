@@ -1,9 +1,5 @@
-from common.service import Service
+from common.service import TaskedService
+from .tasks import *
 
-class BeatmapsService(Service):
-    
-    def __init__(self) -> None:
-        super().__init__("beatmaps_svc", True)
-
-    def run(self):
-        pass
+def get_service() -> TaskedService:
+    return TaskedService("beatmaps_svc", [UpdateBanchoMaps()])
