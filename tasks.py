@@ -36,7 +36,7 @@ class UpdateBanchoMaps(RepeatedTask):
                         print(beatmaps.get_beatmapset(set.id).artist_unicode)
                         added += 1
                     except:
-                        logger.warn("Failed to get beatmapset {set.id}!")
+                        logger.warn(f"Failed to get beatmapset {set.id}!")
                 if not cursor:
                     break
             logger.info(f"Added {added} beatmapsets.")
