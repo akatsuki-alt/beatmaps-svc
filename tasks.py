@@ -18,7 +18,7 @@ class UpdateBanchoMaps(RepeatedTask):
         
     def run(self):
         added = 0
-        with database.session as session:
+        with database.managed_session() as session:
             cursor = None
             while True:
                 sets = ossapi.search_beatmapsets(
@@ -51,7 +51,7 @@ class UpdateBeatmapPacks(RepeatedTask):
         
     def run(self):
         added = 0
-        with database.session as session:
+        with database.managed_session() as session:
             cursor = None
             while True:
                 packs = ossapi.beatmap_packs(cursor_string=cursor)
