@@ -1,12 +1,15 @@
-from common.database.objects import DBBeatmapset, DBBeatmapPack
+from common.database.objects import DBBeatmapset, DBBeatmapPack, DBBeatmap
+
 from common.service import RepeatedTask
 from common.app import database, ossapi
 from common.logging import get_logger
 
+from datetime import datetime, timedelta
+from sqlalchemy import Integer
+
 from ossapi import *
 
 import common.repos.beatmaps as beatmaps
-
 import time
 
 logger = get_logger("beatmaps_svc")
@@ -35,7 +38,6 @@ class UpdateBanchoMaps(RepeatedTask):
                         cursor = None
                         break
                     try:
-                        print(beatmaps.get_beatmapset(set.id).artist_unicode)
                         added += 1
                     except:
                         logger.warn(f"Failed to get beatmapset {set.id}!")
@@ -43,7 +45,30 @@ class UpdateBanchoMaps(RepeatedTask):
                     break
             logger.info(f"Added {added} beatmapsets.")
         return True
+
+class UpdateQualifiedMaps(RepeatedTask):
     
+    def __init__(self) -> None:
+        super().__init__("update_qualified_beatmaps", 2400)
+        
+    def run(self):
+        with database.managed_session() as session:
+            sets = []
+            for map in session.query(DBBeatmap).filter(DBBeatmap.status['bancho'].astext.cast(Integer) == 3, (datetime.now() - DBBeatmap.last_db_update) > timedelta(days=1)):
+                if map.set_id in sets:
+                    continue
+                # TODO: check if beatmaps got deleted
+                beatmaps.get_beatmapset(map.set_id, force_fetch=True) # TODO: pass session
+                sets.append(map.set_id)
+            for map in session.query(DBBeatmap).filter(DBBeatmap.status['akatsuki'].astext.cast(Integer) == 3, (datetime.now() - DBBeatmap.last_db_update) > timedelta(days=1)):
+                if map.set_id in sets:
+                    continue
+                # Same
+                beatmaps.get_beatmapset(map.set_id, force_fetch=True) # TODO: pass session
+                sets.append(map.set_id)
+            session.commit()
+            return True
+
 class UpdateBeatmapPacks(RepeatedTask):
     
     def __init__(self) -> None:
